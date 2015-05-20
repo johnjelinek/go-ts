@@ -12,8 +12,7 @@
         "outDir": "static/app"
     },
     "files": [
-        "./ts/main.ts",
-        "./ts/square.ts"
+        "./ts/main.ts"
     ],
     "formatCodeOptions": {
         "indentSize": 4,

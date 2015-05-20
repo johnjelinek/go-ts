@@ -40,7 +40,7 @@ class SockConnection {
 	interval: number;
 
 	constructor() {
-		this.sock = new SockJS("http://localhost:3000/sock")
+		this.sock = new SockJS("/sock")
 		this.sock.onopen = () => {
 			console.log("Client connected")
 		}
