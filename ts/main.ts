@@ -1,3 +1,15 @@
+/// <reference path="../typings/sockjs/sockjs.d.ts" />
+
+function renderClient(message: string) {
+	var updateElem = <HTMLElement>document.querySelector("#client");
+	updateElem.innerHTML = `${new Date()} Client: ${message}`;
+}
+
+function renderServer(message: string) {
+	var updateElem = <HTMLElement>document.querySelector("#server");
+	updateElem.innerHTML = `${new Date()} Server: ${message}`;
+}
+
 class WSConnection {
 	connection: WebSocket;
 	interval: number;
@@ -8,7 +20,7 @@ class WSConnection {
 			console.log("Client connected");
 		};
 		this.connection.onmessage = (e) => {
-			this.renderServer(e.data);
+			renderServer(e.data);
 		};
 		this.connection.onclose = () => {
 			console.log("Client disconnected");
@@ -18,19 +30,34 @@ class WSConnection {
 		this.interval = setInterval(() => {
 			var randomInt = Math.floor(Math.random() * 100) + 1;
 			this.connection.send(randomInt);
-			this.renderClient(randomInt);
+			renderClient(randomInt.toString());
 		}, 1000);
-	}
-
-	renderClient(message) {
-		var updateElem = <HTMLElement>document.querySelector("#client");
-		updateElem.innerHTML = `${new Date()} Client: ${message}`;
-	}
-
-	renderServer(message) {
-		var updateElem = <HTMLElement>document.querySelector("#server");
-		updateElem.innerHTML = `${new Date()} Server: ${message}`;
 	}
 }
 
-new(WSConnection);
+class SockConnection {
+	sock: SockJS;
+	interval: number;
+
+	constructor() {
+		this.sock = new SockJS("http://localhost:3000/sock")
+		this.sock.onopen = () => {
+			console.log("Client connected")
+		}
+		this.sock.onmessage = (e) => {
+			renderServer(e.data);
+		}
+		this.sock.onclose = () => {
+			console.log("Client disconnected");
+			clearInterval(this.interval);
+		}
+
+		this.interval = setInterval(() => {
+			var randomInt = Math.floor(Math.random() * 100) + 1;
+			this.sock.send(randomInt);
+			renderClient(randomInt.toString());
+		}, 1000);
+	}
+}
+
+new(SockConnection);

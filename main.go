@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"text/template"
 
+	"gopkg.in/igm/sockjs-go.v2/sockjs"
+
 	"github.com/joho/godotenv"
 	"golang.org/x/net/websocket"
 )
@@ -34,6 +36,19 @@ func serveTemplate(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, data)
 }
 
+func squareHandler(session sockjs.Session) {
+	log.Println("new sockjs session established")
+	for {
+		if msg, err := session.Recv(); err == nil {
+			f, _ := strconv.ParseFloat(msg, 64)
+			session.Send(fmt.Sprintln(math.Pow(f, 2)))
+			continue
+		}
+		break
+	}
+	log.Println("sockjs session closed")
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -41,6 +56,7 @@ func main() {
 	}
 
 	http.Handle("/square", websocket.Handler(SquareMultiplierHandler))
+	http.Handle("/sock/", sockjs.NewHandler("/sock", sockjs.DefaultOptions, squareHandler))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", serveTemplate)
 
